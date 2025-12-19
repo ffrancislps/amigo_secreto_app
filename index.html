@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amigo Secreto 2024</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .result h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .result .name {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc80;
+        }
+
+        .footer {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .footer strong {
+            color: #333;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .init-screen {
+            text-align: center;
+        }
+
+        .init-screen button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="initScreen" class="init-screen hidden">
+            <div class="header">
+                <div class="icon">🎁</div>
+                <h1>Amigo Secreto 2024</h1>
+                <p>Inicialización del sorteo</p>
+            </div>
+            <div class="alert alert-warning">
+                ⚠️ <strong>Solo el organizador debe hacer esto UNA vez.</strong><br>
+                Esto generará las asignaciones y las guardará en GitHub Gist.<br>
+                Una vez hecho, no se puede deshacer.
+            </div>
+            <button onclick="initializeSorteo()">🎲 Realizar Sorteo</button>
+            <div id="initLoading" class="loading hidden">Generando sorteo</div>
+            <div id="initError" class="alert alert-error hidden"></div>
+        </div>
+
+        <div id="mainScreen" class="hidden">
+            <div class="header">
+                <div class="icon">🎁</div>
+                <h1>Amigo Secreto 2024</h1>
+                <p>Descubre a quién le regalas</p>
+            </div>
+
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="person">¿Quién eres?</label>
+                    <select id="person">
+                        <option value="">Selecciona tu nombre</option>
+                        <option value="seba">Seba 🇦🇺</option>
+                        <option value="simon">Simon 🇩🇪</option>
+                        <option value="santoro">Santoro 🎮</option>
+                        <option value="pudu">Pudu 🦌</option>
+                        <option value="apu">Apu ☀️</option>
+                        <option value="ale">Ale 🦧</option>
+                        <option value="pelao">Pelao 💪</option>
+                        <option value="francisco">Francisco 👑</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">🔒 Contraseña</label>
+                    <input type="password" id="password" placeholder="Ingresa tu contraseña">
+                </div>
+
+                <div id="error" class="alert alert-error hidden"></div>
+
+                <button id="revealBtn" onclick="revealAssignment()">🎁 Revelar mi amigo secreto</button>
+            </div>
+
+            <div id="resultScreen" class="hidden">
+                <div class="result">
+                    <h2>¡Hola <span id="yourName"></span>!</h2>
+                    <p>Le regalas a:</p>
+                    <div class="name" id="assignedName"></div>
+                    <div style="margin-top: 20px; font-size: 1.2em;">🤫 ¡Recuerda mantenerlo en secreto!</div>
+                </div>
+                <button onclick="reset()" style="margin-top: 20px; background: #666;">Cerrar</button>
+            </div>
+
+            <div class="alert alert-info" style="margin-top: 20px;">
+                💡 <strong>Tip:</strong> Guarda tu contraseña en un lugar seguro. La necesitarás si quieres volver a ver tu asignación.
+            </div>
+        </div>
+
+        <div id="loading" class="loading hidden">Cargando</div>
+    </div>
+
+    <div class="footer">
+        <strong>⚠️ Transparencia técnica:</strong><br>
+        Esta app guarda el sorteo en un GitHub Gist público. El organizador (Seba) tiene acceso técnico al Gist y <em>podría</em> ver los resultados si quisiera. Sin embargo, se ha comprometido a no hacerlo para mantener la sorpresa. El sistema de contraseñas protege contra accesos accidentales, pero la seguridad final depende de la palabra del organizador.
+    </div>
+
+    <script>
+        const GIST_ID = '0d9e810f355ac63a9ebffbfdcc335f56'; // Reemplaza esto después de crear el gist
+        const GITHUB_TOKEN = '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'; // Token con permisos de gist
+
+        const participants = {
+            'seba': { name: 'Seba 🇦🇺', password: 'canguro' },
+            'simon': { name: 'Simon 🇩🇪', password: 'pumbale' },
+            'santoro': { name: 'Santoro 🎮', password: 'hatsune' },
+            'pudu': { name: 'Pudu 🦌', password: 'reite' },
+            'apu': { name: 'Apu ☀️', password: 'solcor' },
+            'ale': { name: 'Ale 🦧', password: 'jaula' },
+            'pelao': { name: 'Pelao 💪', password: 'duble_almeyda' },
+            'francisco': { name: 'Francisco 👑', password: 'arial' }
+        };
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function generateValidAssignments() {
+            const names = Object.keys(participants);
+            let attempts = 0;
+            const maxAttempts = 100;
+
+            while (attempts < maxAttempts) {
+                const shuffled = shuffleArray(names);
+                let valid = true;
+
+                for (let i = 0; i < names.length; i++) {
+                    if (names[i] === shuffled[i]) {
+                        valid = false;
+                        break;
+                    }
+                }
+
+                if (valid) {
+                    const assignments = {};
+                    names.forEach((name, idx) => {
+                        assignments[name] = shuffled[idx];
+                    });
+                    return assignments;
+                }
+
+                attempts++;
+            }
+
+            throw new Error('No se pudo generar un sorteo válido');
+        }
+
+        async function initializeSorteo() {
+            const btn = event.target;
+            btn.disabled = true;
+            document.getElementById('initLoading').classList.remove('hidden');
+            document.getElementById('initError').classList.add('hidden');
+
+            try {
+                const assignments = generateValidAssignments();
+                
+                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'sorteo.json': {
+                                content: JSON.stringify(assignments, null, 2)
+                            }
+                        }
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error al guardar el sorteo');
+
+                alert('✅ ¡Sorteo realizado exitosamente! Ahora comparte esta página con los participantes.');
+                checkSorteoStatus();
+
+            } catch (error) {
+                document.getElementById('initError').textContent = '❌ Error: ' + error.message;
+                document.getElementById('initError').classList.remove('hidden');
+                btn.disabled = false;
+            }
+
+            document.getElementById('initLoading').classList.add('hidden');
+        }
+
+        async function checkSorteoStatus() {
+            document.getElementById('loading').classList.remove('hidden');
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+                const gist = await response.json();
+
+                if (gist.files && gist.files['sorteo.json']) {
+                    // Sorteo exists
+                    document.getElementById('initScreen').classList.add('hidden');
+                    document.getElementById('mainScreen').classList.remove('hidden');
+                } else {
+                    // Sorteo doesn't exist
+                    document.getElementById('initScreen').classList.remove('hidden');
+                    document.getElementById('mainScreen').classList.add('hidden');
+                }
+            } catch (error) {
+                document.getElementById('initScreen').classList.remove('hidden');
+            }
+
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        async function revealAssignment() {
+            const person = document.getElementById('person').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+            const btn = document.getElementById('revealBtn');
+
+            errorDiv.classList.add('hidden');
+
+            if (!person) {
+                errorDiv.textContent = 'Por favor selecciona tu nombre';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (!password) {
+                errorDiv.textContent = 'Por favor ingresa tu contraseña';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (participants[person].password !== password) {
+                errorDiv.textContent = '❌ Contraseña incorrecta';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Verificando...';
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+                const gist = await response.json();
+                const sorteoData = JSON.parse(gist.files['sorteo.json'].content);
+
+                const assignedTo = sorteoData[person];
+
+                document.getElementById('yourName').textContent = participants[person].name;
+                document.getElementById('assignedName').textContent = participants[assignedTo].name;
+                
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('resultScreen').classList.remove('hidden');
+
+            } catch (error) {
+                errorDiv.textContent = '❌ Error al cargar la asignación: ' + error.message;
+                errorDiv.classList.remove('hidden');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🎁 Revelar mi amigo secreto';
+        }
+
+        function reset() {
+            document.getElementById('person').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', checkSorteoStatus);
+
+        // Allow Enter key to submit
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') revealAssignment();
+        });
+    </script>
+</body>
+</html>
